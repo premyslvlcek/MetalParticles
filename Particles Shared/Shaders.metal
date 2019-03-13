@@ -4,8 +4,8 @@
 using namespace metal;
 
 struct Particle {
-  float2 startPosition;
-  float2 position;
+  float3 startPosition;
+  float3 position;
   float  direction;
   float  speed;
   float4 color;
@@ -18,7 +18,7 @@ struct Particle {
 };
 
 struct EmitterUniforms {
-    float2 gravity;
+    float3 gravity;
     float airResistance;
     float deltaTime;
 };
@@ -28,7 +28,7 @@ kernel void compute(device Particle *particles [[buffer(0)]],
                     constant EmitterUniforms &uniforms [[buffer(1)]]
                     ) {
 
-    float2 velocity = particles[id].speed * float2(cos(particles[id].direction), sin(particles[id].direction));
+    float3 velocity = particles[id].speed * float3(cos(particles[id].direction), sin(particles[id].direction), 0);
     velocity += uniforms.gravity;
     velocity -= velocity * uniforms.airResistance;
     particles[id].position += velocity;
@@ -53,14 +53,14 @@ struct VertexOut {
 vertex VertexOut vertex_particle(
                                   constant float2 &size [[buffer(0)]],
                                   device Particle *particles [[buffer(1)]],
-                                  constant float2 &emitterPosition [[ buffer(2) ]],
+                                  constant float3 &emitterPosition [[ buffer(2) ]],
                                   uint instance [[instance_id]]) {
     VertexOut out;
 
-    float2 position = particles[instance].position + emitterPosition;
+    float3 position = particles[instance].position + emitterPosition;
 
     out.position.xy = position.xy / size * 2.0 - 1.0;
-    out.position.z = 0;
+    out.position.z = position.z;
     out.position.w = 1;
 
     out.point_size = particles[instance].size * particles[instance].scale;

@@ -22,8 +22,8 @@ extension Renderer {
         descriptor.lifeRange = -50...70
         descriptor.color = float4(1.0, 0.392, 0.1, 0.5);
         emitter.particleDescriptor = descriptor
-        emitter.gravity = float2(0, -9.8)
-        emitter.airResistance = 1.8
+//        emitter.gravity = float3(0, -9.8, 0)
+//        emitter.airResistance = 1.8
         return emitter
     }
 

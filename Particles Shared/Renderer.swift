@@ -22,15 +22,15 @@ class Renderer: NSObject, MTKViewDelegate {
         buildPipelineStates()
 
         let snowEmitter = snow(size: metalView.drawableSize)
-        snowEmitter.position = [0, Float(metalView.drawableSize.height)]
+        snowEmitter.position = [0, Float(metalView.drawableSize.height), 0]
         emitters.append(snowEmitter)
 
         let fireEmitter = fire(size: metalView.drawableSize)
-        fireEmitter.position = [0, -10]
+        fireEmitter.position = [0, -10, 0]
         emitters.append(fireEmitter)
 
         let experimentEmitter = experiment(size: metalView.drawableSize)
-        experimentEmitter.position = [0, 0]
+        experimentEmitter.position = [0, 0, 0]
         emitters.append(experimentEmitter)
     }
 
@@ -108,7 +108,7 @@ class Renderer: NSObject, MTKViewDelegate {
             renderEncoder.setVertexBuffer(emitter.particleBuffer,
                                           offset: 0, index: 1)
             renderEncoder.setVertexBytes(&emitter.position,
-                                         length: MemoryLayout<float2>.stride,
+                                         length: MemoryLayout<float3>.stride,
                                          index: 2)
             renderEncoder.setFragmentTexture(emitter.particleTexture, index: 0)
             renderEncoder.drawPrimitives(type: .point, vertexStart: 0,
@@ -124,15 +124,15 @@ class Renderer: NSObject, MTKViewDelegate {
     public func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
         emitters.removeAll()
         let snowEmitter = snow(size: size)
-        snowEmitter.position = [0, Float(size.height)]
+        snowEmitter.position = [0, Float(size.height), 0]
         emitters.append(snowEmitter)
 
         let fireEmitter = fire(size: size)
-        fireEmitter.position = [0, -10]
+        fireEmitter.position = [0, -10, 0]
         emitters.append(fireEmitter)
 
         let experimentEmitter = experiment(size: size)
-        experimentEmitter.position = [Float(size.width) / 2, Float(size.height) / 2]
+        experimentEmitter.position = [Float(size.width) / 2, Float(size.height) / 2, 0]
         emitters.append(experimentEmitter)
     }
 }

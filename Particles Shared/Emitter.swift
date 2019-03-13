@@ -1,8 +1,8 @@
 import MetalKit
 
 struct Particle {
-    var startPosition: float2
-    var position: float2
+    var startPosition: float3
+    var position: float3
     var direction: Float
     var speed: Float
     var color: float4
@@ -15,7 +15,7 @@ struct Particle {
 }
 
 struct EmitterUniforms {
-    var gravity: float2
+    var gravity: float3
     var airResistance: Float
     var deltaTime: Float
 };
@@ -24,6 +24,7 @@ struct ParticleDescriptor {
     var position = float2(0)
     var positionXRange: ClosedRange<Float> = 0...0
     var positionYRange: ClosedRange<Float> = 0...0
+    var positionZRange: ClosedRange<Float> = 0...0
     var direction: Float = 0
     var directionRange: ClosedRange<Float> = 0...0
     var speed: Float = 0
@@ -40,9 +41,9 @@ struct ParticleDescriptor {
 }
 
 class Emitter {
-    var gravity: float2 = float2(0, 0)
+    var gravity: float3 = float3(0, 0, 0)
     var airResistance: Float = 0
-    var position: float2 = [0, 0]
+    var position: float3 = [0, 0, 0]
 
     var currentParticles = 0
     var particleCount: Int = 0 {
@@ -68,14 +69,18 @@ class Emitter {
         if currentParticles >= particleCount {
             return
         }
+
         guard let particleBuffer = particleBuffer,
             let pd = particleDescriptor else {
                 return
         }
+
         birthTimer += 1
+
         if birthTimer < birthDelay {
             return
         }
+
         birthTimer = 0
         var pointer = particleBuffer.contents().bindMemory(to: Particle.self,
                                                            capacity: particleCount)
@@ -83,7 +88,8 @@ class Emitter {
         for _ in 0..<birthRate {
             let positionX = pd.position.x + .random(in: pd.positionXRange)
             let positionY = pd.position.y + .random(in: pd.positionYRange)
-            pointer.pointee.position = [positionX, positionY]
+            let positionZ: Float = 0
+            pointer.pointee.position = [positionX, positionY, positionZ]
             pointer.pointee.startPosition = pointer.pointee.position
             pointer.pointee.size = pd.pointSize + .random(in: pd.pointSizeRange)
             pointer.pointee.direction = pd.direction + .random(in: pd.directionRange)
@@ -109,6 +115,7 @@ class Emitter {
         var texture: MTLTexture?
         let textureLoaderOptions: [MTKTextureLoader.Option : Any]
         textureLoaderOptions = [.origin: MTKTextureLoader.Origin.bottomLeft, .SRGB: false]
+
         do {
             let fileExtension: String? = URL(fileURLWithPath: imageName).pathExtension.count == 0 ? "png" : nil
             if let url: URL = Bundle.main.url(forResource: imageName, withExtension: fileExtension) {
