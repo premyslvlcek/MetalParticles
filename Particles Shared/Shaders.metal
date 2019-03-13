@@ -4,17 +4,17 @@
 using namespace metal;
 
 struct Particle {
-  float3 startPosition;
-  float3 position;
-  float  direction;
-  float  speed;
-  float4 color;
-  float  age;
-  float  life;
-  float  size;
-  float  scale;
-  float  startScale;
-  float  endScale;
+    float3 startPosition;
+    float3 startVelocity;
+    float3 position;
+    float3 velocity;
+    float4 color;
+    float  age;
+    float  life;
+    float  size;
+    float  scale;
+    float  startScale;
+    float  endScale;
 };
 
 struct EmitterUniforms {
@@ -28,17 +28,17 @@ kernel void compute(device Particle *particles [[buffer(0)]],
                     constant EmitterUniforms &uniforms [[buffer(1)]]
                     ) {
 
-    float3 velocity = particles[id].speed * float3(cos(particles[id].direction), sin(particles[id].direction), 0);
-    velocity += uniforms.gravity;
-    velocity -= velocity * uniforms.airResistance;
-    particles[id].position += velocity;
+    particles[id].velocity += uniforms.gravity * uniforms.deltaTime;
+    particles[id].velocity -= particles[id].velocity * uniforms.airResistance * uniforms.deltaTime;
+    particles[id].position += particles[id].velocity * uniforms.deltaTime;
 
-    particles[id].age += 1.0;
+    particles[id].age += uniforms.deltaTime;
     float age = particles[id].age / particles[id].life;
     particles[id].scale = mix(particles[id].startScale, particles[id].endScale, age);
 
     if (particles[id].age > particles[id].life) {
         particles[id].position = particles[id].startPosition;
+        particles[id].velocity = particles[id].startVelocity;
         particles[id].age = 0;
         particles[id].scale = particles[id].startScale;
     }
@@ -74,7 +74,7 @@ fragment float4 fragment_particle(
                                   float2 point [[ point_coord ]]) {
     constexpr sampler default_sampler;
     float4 color = particleTexture.sample(default_sampler, point);
-    if (color.a < 0.5) {
+    if (color.a < 0.05) {
         discard_fragment();
     }
     color = float4(color.xyz, 0.5);

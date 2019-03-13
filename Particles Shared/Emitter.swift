@@ -2,9 +2,9 @@ import MetalKit
 
 struct Particle {
     var startPosition: float3
+    var startVelocity: float3
     var position: float3
-    var direction: Float
-    var speed: Float
+    var velocity: float3
     var color: float4
     var age: Float
     var life: Float
@@ -21,7 +21,7 @@ struct EmitterUniforms {
 };
 
 struct ParticleDescriptor {
-    var position = float2(0)
+    var position = float3(0)
     var positionXRange: ClosedRange<Float> = 0...0
     var positionYRange: ClosedRange<Float> = 0...0
     var positionZRange: ClosedRange<Float> = 0...0
@@ -52,50 +52,55 @@ class Emitter {
             particleBuffer = Renderer.device.makeBuffer(length: bufferSize)!
         }
     }
+
     var birthRate = 0
-    var birthDelay = 0 {
+    var birthDelay: Float = 0 {
         didSet {
             birthTimer = birthDelay
         }
     }
-    private var birthTimer = 0
+    private var birthTimer: Float = 0
 
     var particleTexture: MTLTexture!
     var particleBuffer: MTLBuffer?
 
     var particleDescriptor: ParticleDescriptor?
 
-    func emit() {
+    func emit(deltaTime: Float) {
         if currentParticles >= particleCount {
             return
         }
 
-        guard let particleBuffer = particleBuffer,
-            let pd = particleDescriptor else {
+        guard let particleBuffer = particleBuffer, let pd = particleDescriptor else {
                 return
         }
 
-        birthTimer += 1
+        birthTimer += deltaTime
 
         if birthTimer < birthDelay {
             return
         }
 
         birthTimer = 0
-        var pointer = particleBuffer.contents().bindMemory(to: Particle.self,
-                                                           capacity: particleCount)
+        var pointer = particleBuffer.contents().bindMemory(to: Particle.self,capacity: particleCount)
         pointer = pointer.advanced(by: currentParticles)
         for _ in 0..<birthRate {
             let positionX = pd.position.x + .random(in: pd.positionXRange)
             let positionY = pd.position.y + .random(in: pd.positionYRange)
-            let positionZ: Float = 0
+            let positionZ = pd.position.z + .random(in: pd.positionZRange)
+
             pointer.pointee.position = [positionX, positionY, positionZ]
             pointer.pointee.startPosition = pointer.pointee.position
+
             pointer.pointee.size = pd.pointSize + .random(in: pd.pointSizeRange)
-            pointer.pointee.direction = pd.direction + .random(in: pd.directionRange)
-            pointer.pointee.speed = pd.speed + .random(in: pd.speedRange)
+            let direction = pd.direction + .random(in: pd.directionRange)
+            let speed = pd.speed + .random(in: pd.speedRange)
+            let velocity = float3(cos(direction), sin(direction), 0) * speed
+            pointer.pointee.velocity = velocity
+            pointer.pointee.startVelocity = pointer.pointee.velocity
             pointer.pointee.scale = pd.startScale + .random(in: pd.startScaleRange)
             pointer.pointee.startScale = pointer.pointee.scale
+
             if let range = pd.endScaleRange {
                 pointer.pointee.endScale = pd.endScale + .random(in: range)
             } else {
@@ -105,6 +110,7 @@ class Emitter {
             pointer.pointee.age = 0
             pointer.pointee.life = pd.life + .random(in: pd.lifeRange)
             pointer.pointee.color = pd.color
+
             pointer = pointer.advanced(by: 1)
         }
         currentParticles += birthRate

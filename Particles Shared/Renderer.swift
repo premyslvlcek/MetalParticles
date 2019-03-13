@@ -70,8 +70,10 @@ class Renderer: NSObject, MTKViewDelegate {
             let descriptor = view.currentRenderPassDescriptor,
             let drawable = view.currentDrawable else { return }
 
+        let deltaTime = 1.0 / Float(view.preferredFramesPerSecond)
+
         for emitter in emitters {
-            emitter.emit()
+            emitter.emit(deltaTime: deltaTime)
         }
         // first command encoder
         // update the particle emitters
@@ -82,7 +84,6 @@ class Renderer: NSObject, MTKViewDelegate {
         computeEncoder.setComputePipelineState(particlesPipelineState)
         let width = particlesPipelineState.threadExecutionWidth
         let threadsPerGroup = MTLSizeMake(width, 1, 1)
-        let deltaTime = 1.0 / Float(view.preferredFramesPerSecond)
 
         for emitter in emitters {
             let threadsPerGrid = MTLSizeMake(emitter.particleCount, 1, 1)
@@ -91,19 +92,17 @@ class Renderer: NSObject, MTKViewDelegate {
             computeEncoder.setBytes(&emitterUniforms, length: MemoryLayout<EmitterUniforms>.stride, index: 1)
             computeEncoder.dispatchThreads(threadsPerGrid, threadsPerThreadgroup: threadsPerGroup)
         }
+
         computeEncoder.endEncoding()
 
         // second command encoder, render encoder, displaying particles
-        // 1
         let renderEncoder = commandBuffer.makeRenderCommandEncoder(descriptor: descriptor)!
         renderEncoder.setRenderPipelineState(renderPipelineState)
-        // 2
         var size = float2(Float(view.drawableSize.width),
                           Float(view.drawableSize.height))
         renderEncoder.setVertexBytes(&size,
                                      length: MemoryLayout<float2>.stride,
                                      index: 0)
-        // 3
         for emitter in emitters {
             renderEncoder.setVertexBuffer(emitter.particleBuffer,
                                           offset: 0, index: 1)
