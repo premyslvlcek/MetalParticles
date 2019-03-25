@@ -74,7 +74,7 @@ fragment float4 fragment_particle(
                                   float2 point [[ point_coord ]]) {
     constexpr sampler default_sampler;
     float4 color = particleTexture.sample(default_sampler, point);
-    if (color.a < 0.05) {
+    if (color.a < 0.5) {
         discard_fragment();
     }
     color = float4(color.xyz, 0.5);
