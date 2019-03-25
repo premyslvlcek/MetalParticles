@@ -19,7 +19,7 @@ extension Renderer {
         descriptor.endScaleRange = 0...0
         descriptor.life = 30
         descriptor.lifeRange = -0.5...0.5
-        descriptor.color = float4(1.0, 0.24, 0.45, 0.5);
+        descriptor.color = float4(1.0, 0.24, 0.45, 0.5)
         emitter.particleDescriptor = descriptor
         emitter.gravity = float3(0, -40.8, 0)
         return emitter
@@ -40,7 +40,7 @@ extension Renderer {
         descriptor.startScale = 0
         descriptor.startScaleRange = 0.01...0.3
         descriptor.life = 8.5
-        descriptor.color = float4(1.0);
+        descriptor.color = float4(repeating: 1.0)
         emitter.particleDescriptor = descriptor
         return emitter
     }
@@ -63,7 +63,7 @@ extension Renderer {
         descriptor.endScaleRange = 0...0
         descriptor.life = 2
         descriptor.lifeRange = -0.8...1.2
-        descriptor.color = float4(0.1, 0.4, 0.8, 0.5);
+        descriptor.color = float4(0.1, 0.4, 0.8, 0.5)
         emitter.particleDescriptor = descriptor
         return emitter
     }

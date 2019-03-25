@@ -21,7 +21,7 @@ struct EmitterUniforms {
 };
 
 struct ParticleDescriptor {
-    var position = float3(0)
+    var position = float3(repeating: 0)
     var positionXRange: ClosedRange<Float> = 0...0
     var positionYRange: ClosedRange<Float> = 0...0
     var positionZRange: ClosedRange<Float> = 0...0
@@ -37,7 +37,7 @@ struct ParticleDescriptor {
     var endScaleRange: ClosedRange<Float>?
     var life: Float = 0
     var lifeRange: ClosedRange<Float> = 1...1
-    var color = float4(0)
+    var color = float4(repeating: 0)
 }
 
 class Emitter {
