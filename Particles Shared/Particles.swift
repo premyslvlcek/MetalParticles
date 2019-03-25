@@ -1,6 +1,5 @@
 import CoreGraphics
 import simd
-import UIKit
 
 extension Renderer {
     func fire(size: CGSize) -> Emitter {
